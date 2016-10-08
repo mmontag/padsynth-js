@@ -13,6 +13,7 @@ var Synth = require('./synth');
 var Visualizer = require('./visualizer');
 var StepDraw = require('./stepdraw');
 var HarmonicProfiles = require('./harmonic-profiles');
+var Reverb = require('./reverb');
 
 var config = require('./config');
 var defaultPresets = require('./padsynth-presets');
@@ -36,9 +37,12 @@ var stepDraw = new StepDraw("stepdraw", 0x206af0, 0xb7e7ff, [], 60, Voice.update
 var scriptProcessor = null;
 
 function initializeAudio() {
+	Reverb.extend(audioContext);
+	var reverbNode = audioContext.createReverbFromUrl("impulses/church-saint-laurentius.wav");
 	scriptProcessor = audioContext.createScriptProcessor(config.bufferSize, 0, 2);
-	scriptProcessor.connect(audioContext.destination);
 	scriptProcessor.connect(visualizer.getAudioNode());
+	//scriptProcessor.connect(reverbNode);
+	scriptProcessor.connect(audioContext.destination);
 	// Attach to window to avoid GC. http://sriku.org/blog/2013/01/30/taming-the-scriptprocessornode
 	scriptProcessor.onaudioprocess = window.audioProcess = function (e) {
 		Voice.update();
