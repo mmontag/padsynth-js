@@ -1,18 +1,13 @@
-DX7 Synth
+PADSynth
 =================
 
-![](http://voices.washingtonpost.com/postrock/yamaha-dx-7.jpg)
-
-DX7 FM synthesis using the Web Audio and Web MIDI API. Works in Chrome and Firefox.
+Additive synthesis using the Web Audio and Web MIDI API. Works in Chrome and Firefox.
 Use a MIDI or QWERTY keyboard to play the synth.
 
-[Live demo](http://mmontag.github.io/dx7-synth-js/)
+[Live demo](http://mmontag.github.io/padsynth-js/)
 
-Many thanks to:
+The PADsynth technique works by running the inverse FFT on a frequency spectrum profile determined by the synthesis parameters. 
+The output is a time domain waveform. Every time the parameters are adjusted, the wavetable must be recalculated. Fortunately, with a short wavetable, this happens fast enough to allow interactive performance in a web browser.
 
-- John Chowning and Yamaha
-- Sean Bolton, author of Hexter, a DSSI DX7 modeler
-- Phil Cowans, author of Javascript-DX7 music hackday prototype https://github.com/philcowans/Javascript-DX7
-- Jamie Bullock, Ewan Macpherson, and other independent engineers who provided specs about the DX7/TX7 implementation
-- Propellerhead Software, for the PX7 Reason Rack Extension
-- Native Instruments, for the FM7 and FM8 VSTi software instruments
+
+Many thanks to Paul Nasca, creator of the [PADSynth algorithm](http://www.paulnasca.com/algorithms-created-by-me#TOC-PadSynth-synthesis-algorithm).

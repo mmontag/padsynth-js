@@ -1,21 +1,21 @@
 {
-  "name": "dx7-synth-js",
+  "name": "padsynth-js",
   "version": "0.0.1",
-  "description": "DX7 FM synthesis using the Web Audio and Web MIDI API.",
+  "description": "PADsynth additive synthesis using the Web Audio and Web MIDI API.",
   "main": "app.js",
   "scripts": {
     "start": "webpack",
     "prod": "webpack --optimize-minimize --optimize-dedupe",
-    "dev": "webpack-dev-server --progress --colors --port 9090 --inline --hot",
+    "dev": "webpack-dev-server --progress --colors --port 9091 --inline --hot",
     "deploy": "git checkout master; git branch -D gh-pages; git checkout -b gh-pages; npm start; git add bundle.js; git commit -m'Deploy'; git push --force --set-upstream origin gh-pages; git checkout master"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mmontag/dx7-synth-js.git"
+    "url": "git+https://github.com/mmontag/padsynth-js.git"
   },
   "keywords": [
-    "yamaha",
-    "dx7",
+    "padsynth",
+    "additive synthesis",
     "synth",
     "synthesizer",
     "midi",
@@ -24,9 +24,9 @@
   "author": "Matt Montag",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/mmontag/dx7-synth-js/issues"
+    "url": "https://github.com/mmontag/padsynth-js/issues"
   },
-  "homepage": "https://github.com/mmontag/dx7-synth-js#readme",
+  "homepage": "https://github.com/mmontag/padsynth-js#readme",
   "devDependencies": {
     "json-loader": "^0.5.2",
     "node-libs-browser": "^0.5.2",

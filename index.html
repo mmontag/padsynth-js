@@ -1,172 +1,97 @@
 <!DOCTYPE html>
 <html ng-app="synthApp">
 <head>
-	<title>DX7 Synth</title>
+	<title>PADSynth</title>
 	<link rel="stylesheet" type="text/css" href="synth.css">
 </head>
 <body ng-controller="MidiCtrl as midiCtrl">
-		<div class="dx7-container" ng-controller="PresetCtrl as presetCtrl">
-			<div class="dx7-top-panel">
-				<div class="dx7-logo"></div>
-				<div class="display">
-					<div class="lcd-text" ng-bind="presetCtrl.paramDisplayText"></div>
-					<div id="analysis" class="analysis"></div>
-					<select ng-model="presetCtrl.selectedIndex"
-									ng-change="presetCtrl.onChange($event)"
-									ng-options="presetCtrl.presets.indexOf(preset) as preset.name for preset in presetCtrl.presets"
-									class="lcd"></select>
-				</div>
-				<div class="dx7-buttons-row-1">
-					<button class="dx7-button purple" ng-click="midiCtrl.onVizClick()">Viz</button>
-					<button class="dx7-button teal" ng-click="midiCtrl.onDemoClick(0)">Demo 1</button>
-					<button class="dx7-button teal" ng-click="midiCtrl.onDemoClick(1)">Demo 2</button>
-					<button class="dx7-button pink" ng-click="presetCtrl.save()">Save</button>
-					<button class="dx7-button pink" ng-click="presetCtrl.reset()">Reset</button>
-				</div>
-				<div class="dx7-buttons-row-2">
-					MIDI Device: <select class="dx7-button" id="midiIn"></select>
-				</div>
-			</div>
-			<div class="dx7-operators">
-				<div class="algorithm-diagram" style="background-image: url(images/algorithm-{{ ('0' + presetCtrl.params.algorithm).slice(-2) }}.svg)"></div>
-				<div class="operator" ng-repeat="operator in presetCtrl.presets[presetCtrl.selectedIndex].operators | reverse" ng-controller="OperatorCtrl">
-					<div class="param-group">
-						<div ng-show="$first" class="param-group-heading heading-algorithm">Algorithm</div>
-						<div ng-show="$first" class="param-group-heading">Operator</div>
-						<div class="param">
-							<div class="param-label">On/Off</div>
-							<toggle-button ng-model="operator.enabled"></toggle-button>
-						</div>
-						<div class="param">
-							<knob step="1" min="0" max="99" to-number label="Level" ng-model="operator.volume"></knob>
-						</div>
-						<div class="param">
-							<knob step="1" min="-50" max="50" to-number label="Pan" ng-model="operator.pan"></knob>
-						</div>
-						<div class="param">
-							<knob step="1" min="0" max="7" to-number label="Vel Sens" ng-model="operator.velocitySens"></knob>
-						</div>
-						<div class="param">
-							<knob step="1" min="-3" max="3" to-number label="LFO Sens" ng-model="operator.lfoAmpModSens"></knob>
-						</div>
-					</div>
-					<div class="param-group">
-						<div ng-show="$first" class="param-group-heading">Frequency</div>
-						<div class="param">
-							<div class="param-label">Fixed</div>
-							<toggle-button ng-model="operator.oscMode"></toggle-button>
-						</div>
-						<div class="param">
-							<knob step="1" min="0" max="31" to-number ng-if="operator.oscMode == 0" label="Coarse" ng-model="operator.freqCoarse"></knob>
-							<knob step="1" min="0" max="3" to-number ng-if="operator.oscMode == 1" label="Coarse" ng-model="operator.freqCoarse"></knob>
-						</div>
-						<div class="frequency-display" ng-bind="freqDisplay"></div>
-						<div class="param">
-							<knob step="1" min="0" max="99" to-number label="Fine" ng-model="operator.freqFine"></knob>
-						</div>
-						<div class="param">
-							<knob step="1" min="-7" max="7" to-number label="Detune" ng-model="operator.detune"></knob>
-						</div>
-					</div>
-					<div class="param-group param-group-sliders">
-						<div ng-show="$first" class="param-group-heading">EG Rate</div>
-						<div class="param narrow" ng-repeat="i in [0,1,2,3]">
-							<slider step="1" min="0" max="99" to-number label="EG R{{i+1}}" ng-model="operator.rates[i]"></slider>
-						</div>
-					</div>
-					<div class="param-group param-group-sliders">
-						<div ng-show="$first" class="param-group-heading">EG Level</div>
-						<div class="param narrow" ng-repeat="i in [0,1,2,3]">
-							<slider step="1" min="0" max="99" to-number label="EG L{{i+1}}" ng-model="operator.levels[i]"></slider>
-						</div>
-					</div>
-					<div class="param-group">
-						<div ng-show="$first" class="param-group-heading">Keyboard Scaling <span style="opacity: 0.2">Not implemented</span></div>
-						<div class="param">
-							<knob step="1" min="0" max="99" to-number label="Rate" ng-model="operator.keyScaleRate"></knob>
-						</div>
-						<div class="param">
-							<knob step="1" min="0" max="99" to-number label="Depth" ng-model="operator.keyScaleDepthL"></knob>
-						</div>
-						<div class="param">
-							<knob step="1" min="0" max="99" to-number label="Curve" ng-model="operator.keyScaleCurveL"></knob>
-						</div>
-						<div class="param">
-							<knob step="1" min="0" max="99" to-number label="Breakpt" ng-model="operator.keyScaleBreakpoint"></knob>
-						</div>
-						<div class="param">
-							<knob step="1" min="0" max="99" to-number label="Curve" ng-model="operator.keyScaleCurveR"></knob>
-						</div>
-						<div class="param">
-							<knob step="1" min="0" max="99" to-number label="Depth" ng-model="operator.keyScaleDepthR"></knob>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="dx7-bottom-panel">
-				<div class="param wide">
-					<knob step="1" min="1" max="32" to-number label="Algorithm" ng-model="presetCtrl.params.algorithm"></knob>
-				</div>
-				<div class="param wide">
-					<knob step="1" min="0" max="7" to-number label="Feedback" ng-model="presetCtrl.params.feedback"></knob>
-				</div>
-				<!--
-				<div class="group-name">LFO</div>
-				-->
-				<div class="param extra-wide">
-					<div class="param-label">Waveform</div>
-					<select class="dx7-button"
-							ng-model="presetCtrl.presets[presetCtrl.selectedIndex].lfoWaveform"
-							ng-change="presetCtrl.onLFOChange()"
-							ng-options="presetCtrl.lfoWaveformOptions.indexOf(wave) as wave for wave in presetCtrl.lfoWaveformOptions"></select>
-				</div>
-				<div class="param">
-					<knob step="1" min="0" max="99" to-number label="Speed" ng-model="presetCtrl.params.lfoSpeed"></knob>
-				</div>
-				<div class="param">
-					<knob step="1" min="0" max="99" to-number label="Delay" ng-model="presetCtrl.params.lfoDelay"></knob>
-				</div>
-				<div class="param">
-					<knob step="1" min="0" max="99" to-number label="Amp Mod" ng-model="presetCtrl.params.lfoAmpModDepth"></knob>
-				</div>
-				<div class="param">
-					<knob step="1" min="0" max="99" to-number label="Pitch Mod" ng-model="presetCtrl.params.lfoPitchModDepth"></knob>
-				</div>
-				<div class="param">
-					<knob step="1" min="0" max="7" to-number label="Pitch Sens" ng-model="presetCtrl.params.lfoPitchModSens"></knob>
-				</div>
-				<div class="param">
-					<div class="param-label">After Touch</div>
-					<toggle-button ng-true-value="1" ng-false-value="0" ng-model="presetCtrl.params.aftertouchEnabled"></toggle-button>
-				</div>
-				<select class="dx7-button"
-						ng-model="midiCtrl.midiFileIndex"
-						ng-options="midiCtrl.midiFiles.indexOf(file) as file for file in midiCtrl.midiFiles"></select>
-				<button class="dx7-button teal" ng-click="midiCtrl.onMidiPlay()">Play</button>
-				<button class="dx7-button teal" ng-click="midiCtrl.onMidiStop()">Stop</button>
-
-				<!-- TODO: Sync and Pitch EG
-				<div class="param">
-					<div class="param-label">Sync</div>
-					<label for="lfoSync">
-						<toggle-button ng-true-value="1" ng-false-value="0" ng-model="presetCtrl.params.lfoSync"></toggle-button>
-					</label>
-				</div>
-				<div class="param-group param-group-sliders">
-					<div class="param-group-heading below">Pitch EG Rate</div>
-					<div class="param narrow" ng-repeat="i in [0,1,2,3]">
-						<slider step="1" min="0" max="99" to-number label="Pitch R{{i+1}}" ng-model="presetCtrl.params.pitchEnvelope.rates[i]"></slider>
-					</div>
-				</div>
-				<div class="param-group param-group-sliders">
-					<div class="param-group-heading below">Pitch EG Level</div>
-					<div class="param narrow" ng-repeat="i in [0,1,2,3]">
-						<slider step="1" min="0" max="99" to-number label="Pitch L{{i+1}}" ng-model="presetCtrl.params.pitchEnvelope.levels[i]"></slider>
-					</div>
-				</div>
-				-->
-			</div>
+<div class="container" ng-controller="PresetCtrl as presetCtrl">
+	<div class="top-panel">
+		<div class="logo padsynth-logo"></div>
+		<div class="display">
+			<div class="lcd-text" ng-bind="presetCtrl.paramDisplayText"></div>
+			<div id="analysis" class="analysis"></div>
+			<select ng-model="presetCtrl.selectedIndex"
+					ng-change="presetCtrl.onChange($event)"
+					ng-options="presetCtrl.presets.indexOf(preset) as preset.name for preset in presetCtrl.presets"
+					class="lcd"></select>
 		</div>
-	<script src="bundle.js"></script>
+		<div class="buttons-row-1">
+			<button class="button primary" ng-click="midiCtrl.onVizClick()">Viz</button>
+			<button class="button secondary" ng-click="midiCtrl.onDemoClick(0)">Demo 1</button>
+			<button class="button secondary" ng-click="midiCtrl.onDemoClick(1)">Demo 2</button>
+		</div>
+		<div class="buttons-row-2">
+			MIDI Device: <select class="button" id="midiIn"></select>
+		</div>
+	</div>
+	<div class="rows">
+		<div class="row">
+			<div class="param">
+				<knob step="0.001" min="0.001" max="4" to-number label="Attack"
+					  ng-model="presetCtrl.params.env.attack"></knob>
+			</div>
+			<div class="param">
+				<knob step="0.01" min="0.001" max="4" to-number label="Decay"
+					  ng-model="presetCtrl.params.env.decay"></knob>
+			</div>
+			<div class="param">
+				<knob step="0.01" min="0" max="1" to-number label="Sustain"
+					  ng-model="presetCtrl.params.env.sustain"></knob>
+			</div>
+			<div class="param">
+				<knob step="0.01" min="0.001" max="6" to-number label="Release"
+					  ng-model="presetCtrl.params.env.release"></knob>
+			</div>
+			<!--<div class="param">-->
+				<!--<knob step="1" min="1" max="100" to-number label="Num H"-->
+					  <!--ng-model="presetCtrl.params.numHarmonics"></knob>-->
+			<!--</div>-->
+			<div class="param">
+				<knob step="1" min="1" max="300" to-number label="Bandwidth"
+					  ng-model="presetCtrl.params.bandwidth"></knob>
+			</div>
+			<div class="param">
+				<knob step="0.05" min="-2" max="2" to-number label="BW Scaling"
+					  ng-model="presetCtrl.params.bwScaling"></knob>
+			</div>
+			<div class="param">
+				<knob step="0.01" min="0.1" max="2" to-number label="Ratio"
+					  ng-model="presetCtrl.params.harmonicRatio"></knob>
+			</div>
+			<div class="param">
+				<knob step="0.01" min="0" max="1" to-number label="H Scaling"
+					  ng-model="presetCtrl.params.harmonicScaling"></knob>
+			</div>
+			<!--<div class="param">-->
+				<!--<knob step="0.01" min="0" max="1" to-number label="HF Noise"-->
+					  <!--ng-model="presetCtrl.params.harmonicFreqNoise"></knob>-->
+			<!--</div>-->
+			<!--<div class="param">-->
+				<!--<knob step="0.01" min="0" max="1" to-number label="HA Noise"-->
+					  <!--ng-model="presetCtrl.params.harmonicAmpNoise"></knob>-->
+			<!--</div>-->
+		</div>
+		<div class="row">
+			<div class="stepdraw">
+				<canvas id="stepdraw" style="height: 150px; width: 600px;"></canvas>
+			</div>
+			<button class="button primary" ng-click="presetCtrl.loadProfile('saw')">Saw</button>
+			<button class="button primary" ng-click="presetCtrl.loadProfile('square')">Square</button>
+			<button class="button primary" ng-click="presetCtrl.loadProfile('ah')">Ahh</button>
+			<button class="button primary" ng-click="presetCtrl.loadProfile('ee')">Ee</button>
+			<button class="button primary" ng-click="presetCtrl.smoothProfile()">Smooth</button>
+			<button class="button primary" ng-click="presetCtrl.clearProfile()">Clear</button>
+		</div>
+	</div>
+	<div class="bottom-panel">
+		<select class="button"
+				ng-model="midiCtrl.midiFileIndex"
+				ng-options="midiCtrl.midiFiles.indexOf(file) as file for file in midiCtrl.midiFiles"></select>
+		<button class="button secondary" ng-click="midiCtrl.onMidiPlay()">Play</button>
+		<button class="button secondary" ng-click="midiCtrl.onMidiStop()">Stop</button>
+	</div>
+</div>
+<script src="bundle.js"></script>
 </body>
 </html>

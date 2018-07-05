@@ -100,12 +100,16 @@ Synth.prototype.noteOff = function(note) {
 	}
 };
 
-Synth.prototype.panic = function() {
+Synth.prototype.allNotesOff = function() {
 	this.sustainPedalDown = false;
 	for (var i = 0, l = this.voices.length; i < l; i++) {
 		if (this.voices[i])
 			this.voices[i].noteOff();
 	}
+};
+
+Synth.prototype.panic = function() {
+	this.allNotesOff();
 	this.voices = [];
 };
 

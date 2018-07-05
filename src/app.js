@@ -5,14 +5,17 @@ var MMLEmitter = require('mml-emitter');
 var MIDIFile = require('midifile');
 var MIDIPlayer = require('midiplayer');
 
-var FMVoice = require('./voice-dx7');
+//var FMVoice = require('./voice-dx7');
+var Voice = require('./padvoice');
 var MIDI = require('./midi');
 var Synth = require('./synth');
-var SysexDX7 = require('./sysex-dx7');
+//var SysexDX7 = require('./sysex-dx7');
 var Visualizer = require('./visualizer');
+var StepDraw = require('./stepdraw');
+var HarmonicProfiles = require('./harmonic-profiles');
 
 var config = require('./config');
-var defaultPresets = require('./default-presets');
+var defaultPresets = require('./padsynth-presets');
 
 var BUFFER_SIZE_MS = 1000 * config.bufferSize / config.sampleRate;
 var MS_PER_SAMPLE = 1000 / config.sampleRate;
@@ -25,10 +28,11 @@ var PARAM_CHANGE = 'param-change';
 var DEFAULT_PARAM_TEXT = '--';
 
 var app = Angular.module('synthApp', ['ngStorage']);
-var synth = new Synth(FMVoice, config.polyphony);
+var synth = new Synth(Voice, config.polyphony);
 var midi = new MIDI(synth);
 var audioContext = new (window.AudioContext || window.webkitAudioContext)();
-var visualizer = new Visualizer("analysis", 256, 35, 0xc0cf35, 0x2f3409, audioContext);
+var visualizer = new Visualizer("analysis", 256, 35, 0x206af0, 0xb7e7f5, audioContext);
+var stepDraw = new StepDraw("stepdraw", 0x206af0, 0xb7e7ff, [], 60, Voice.updateHarmonics);
 var scriptProcessor = null;
 
 function initializeAudio() {
@@ -37,6 +41,7 @@ function initializeAudio() {
 	scriptProcessor.connect(visualizer.getAudioNode());
 	// Attach to window to avoid GC. http://sriku.org/blog/2013/01/30/taming-the-scriptprocessornode
 	scriptProcessor.onaudioprocess = window.audioProcess = function (e) {
+		Voice.update();
 		var buffer = e.outputBuffer;
 		var outputL = buffer.getChannelData(0);
 		var outputR = buffer.getChannelData(1);
@@ -99,7 +104,8 @@ app.directive('knob', function() {
 		var fgEl = element.find('div');
 		var max = element.attr('max');
 		var min = element.attr('min');
-		var increment = (max - min) < 99 ? 1 : 2;
+		var increment = parseFloat(element.attr('step')) || 1;
+		var precision = Math.ceil(Math.log10(1 / increment));
 		element.on('mousedown', function(e) {
 			startY = e.clientY;
 			startModel = scope.ngModel || 0;
@@ -136,9 +142,9 @@ app.directive('knob', function() {
 				e.preventDefault();
 				e.stopPropagation();
 				if (code == 38 || code == 39) {
-					scope.ngModel = Math.min(scope.ngModel + 1, max);
+					scope.ngModel = Math.min(scope.ngModel + increment, max);
 				} else {
-					scope.ngModel = Math.max(scope.ngModel - 1, min);
+					scope.ngModel = Math.max(scope.ngModel - increment, min);
 				}
 				apply();
 			}
@@ -162,7 +168,7 @@ app.directive('knob', function() {
 					clientY = e.targetTouches[0].clientY;
 				var dy = (startY - clientY) * (max - min) / pixelRange;
 				// TODO: use 'step' attribute
-				scope.ngModel = Math.round(Math.max(min, Math.min(max, dy + startModel)));
+				scope.ngModel = Math.max(min, Math.min(max, dy + startModel));
 				apply();
 			}
 		}
@@ -177,7 +183,7 @@ app.directive('knob', function() {
 		}
 
 		var apply = _.throttle(function () {
-			scope.$emit(PARAM_CHANGE, scope.label + ": " + scope.ngModel);
+			scope.$emit(PARAM_CHANGE, scope.label + ": " + parseFloat(scope.ngModel).toFixed(precision));
 			scope.$apply();
 		}, 33);
 
@@ -313,7 +319,12 @@ app.controller('MidiCtrl', ['$scope', '$http', function($scope, $http) {
 		"midi/chameleon.mid",
 		"midi/tunisia.mid",
 		"midi/sowhat.mid",
-		"midi/got-a-match.mid"
+		"midi/got-a-match.mid",
+		"midi/summertime.mid",
+		"midi/niteday.mid",
+		"midi/favorite-things.mid",
+		"midi/who-can-i-turn-to.mid",
+		"midi/pure-imagination.mid"
 	];
 	this.midiPlayer = new MIDIPlayer({
 		output: {
@@ -417,7 +428,7 @@ app.controller('MidiCtrl', ['$scope', '$http', function($scope, $http) {
 	this.onDemoClick = function(idx) {
 		if (mml && mml._ended == 0) {
 			mml.stop();
-			synth.panic();
+			synth.allNotesOff();
 			mml = null;
 		} else {
 			mml = this.createMML(idx);
@@ -470,27 +481,13 @@ app.controller('MidiCtrl', ['$scope', '$http', function($scope, $http) {
 
 	window.addEventListener('keydown', this.onKeyDown, false);
 	window.addEventListener('keyup', this.onKeyUp, false);
-}]);
 
-app.controller('OperatorCtrl', function($scope) {
-	$scope.$watchGroup(['operator.oscMode', 'operator.freqCoarse', 'operator.freqFine', 'operator.detune'], function() {
-		FMVoice.updateFrequency($scope.operator.idx);
-		$scope.freqDisplay = $scope.operator.oscMode === 0 ?
-			parseFloat($scope.operator.freqRatio).toFixed(2).toString() :
-			$scope.operator.freqFixed.toString().substr(0,4).replace(/\.$/,'');
-	});
-	$scope.$watch('operator.volume', function() {
-		FMVoice.setOutputLevel($scope.operator.idx, $scope.operator.volume);
-	});
-	$scope.$watch('operator.pan', function() {
-		FMVoice.setPan($scope.operator.idx, $scope.operator.pan);
-	});
-});
+	initializeAudio();
+}]);
 
 app.controller('PresetCtrl', ['$scope', '$localStorage', '$http', function ($scope, $localStorage, $http) {
 	var self = this;
 
-	this.lfoWaveformOptions = [ 'Triangle', 'Saw Down', 'Saw Up', 'Square', 'Sine', 'Sample & Hold' ];
 	this.presets = defaultPresets;
 	this.selectedIndex = 0;
 	this.paramDisplayText = DEFAULT_PARAM_TEXT;
@@ -523,38 +520,47 @@ app.controller('PresetCtrl', ['$scope', '$localStorage', '$http', function ($sco
 		flashParam(value);
 	});
 
-	$http.get('roms/ROM1A.SYX')
-		.success(function(data) {
-			self.basePresets = SysexDX7.loadBank(data);
-			self.$storage = $localStorage;
-			self.presets = [];
-			for (var i = 0; i < self.basePresets.length; i++) {
-				if (self.$storage[i]) {
-					self.presets[i] = Angular.copy(self.$storage[i]);
-				} else {
-					self.presets[i] = Angular.copy(self.basePresets[i]);
-				}
-			}
-			self.selectedIndex = 10; // Select E.PIANO 1
-			self.onChange();
-		});
+	$scope.$watchGroup([
+		'presetCtrl.params.bandwidth',
+		'presetCtrl.params.bwScaling',
+		'presetCtrl.params.numHarmonics',
+		'presetCtrl.params.harmonicAmpNoise',
+		'presetCtrl.params.harmonicFreqNoise',
+		'presetCtrl.params.harmonicRatio',
+		'presetCtrl.params.harmonicScaling'
+	], function() {
+		Voice.setDirty();
+	});
+	//$http.get('padsynth-presets.json')
+	//		.success(function(data) {
+	//			self.$storage = $localStorage;
+	//			self.presets = [];
+	//			for (var i = 0; i < self.basePresets.length; i++) {
+	//				if (self.$storage[i]) {
+	//					self.presets[i] = Angular.copy(self.$storage[i]);
+	//				} else {
+	//					self.presets[i] = Angular.copy(self.basePresets[i]);
+	//				}
+	//			}
+				//self.onChange();
+			//});
+
+	this.loadProfile = function(type) {
+		var array = HarmonicProfiles[type](config.stepDrawSize);
+		stepDraw.setArray(array);
+		Voice.updateHarmonics(array);
+	};
 
 	this.onChange = function() {
 		this.params = this.presets[this.selectedIndex];
-		FMVoice.setParams(this.params);
+		Voice.setParams(this.params);
+		stepDraw.setArray(this.params.harmonics);
 		// TODO: separate UI parameters from internal synth parameters
 		// TODO: better initialization of computed parameters
-		for (var i = 0; i < this.params.operators.length; i++) {
-			var op = this.params.operators[i];
-			FMVoice.setOutputLevel(i, op.volume);
-			FMVoice.updateFrequency(i);
-			FMVoice.setPan(i, op.pan);
-		}
-		FMVoice.setFeedback(this.params.feedback);
 	};
 
 	this.save = function() {
-		this.$storage[this.selectedIndex] = Angular.copy(this.presets[this.selectedIndex]);
+		$localStorage[this.selectedIndex] = Angular.copy(this.presets[this.selectedIndex]);
 		console.log("Saved preset %s.", this.presets[this.selectedIndex].name);
 	};
 
@@ -567,40 +573,6 @@ app.controller('PresetCtrl', ['$scope', '$localStorage', '$http', function ($sco
 		}
 	};
 
-	$scope.$watch('presetCtrl.params.feedback', function(newValue) {
-		if (newValue !== undefined) {
-			FMVoice.setFeedback(self.params.feedback);
-		}
-	});
-
-	$scope.$watchGroup([
-		'presetCtrl.params.lfoSpeed',
-		'presetCtrl.params.lfoDelay',
-		'presetCtrl.params.lfoAmpModDepth',
-		'presetCtrl.params.lfoPitchModDepth',
-		'presetCtrl.params.lfoPitchModSens',
-		'presetCtrl.params.lfoWaveform'
-	], function() {
-		FMVoice.updateLFO();
-	});
-
 	self.onChange();
-
-  // Dirty iOS audio workaround. Sound can only be enabled in a touch handler.
-	if (/iPad|iPhone|iPod/.test(navigator.platform)) {
-		window.addEventListener("touchend", iOSUnlockSound, false);
-		function iOSUnlockSound() {
-			window.removeEventListener("touchend", iOSUnlockSound, false);
-			var buffer = audioContext.createBuffer(1, 1, 22050);
-			var source = audioContext.createBufferSource();
-			source.buffer = buffer;
-			source.connect(audioContext.destination);
-			if(source.play){ source.play(0); } else if(source.noteOn){ source.noteOn(0); }
-			flashParam("Starting audio...");
-			initializeAudio();
-		}
-	} else {
-		initializeAudio();
-	}
 
 }]);

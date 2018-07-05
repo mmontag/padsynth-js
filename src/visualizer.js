@@ -12,7 +12,7 @@ function Visualizer(containerId, width, height, backgroundColor, foregroundColor
 	this.mode = MODE_FFT;
 
 	// set up audio analyser node
-	this.numPoints = Math.pow(2, Math.ceil(Math.log(width) / Math.LN2)) * 2;
+	this.numPoints = Math.pow(2, Math.ceil(Math.log(width) / Math.LN2)) * 8;
 	this.analyzer = audioContext.createAnalyser();
 	this.analyzer.smoothingTimeConstant = 0.25;
 	this.analyzer.fftSize = this.numPoints;

@@ -14,6 +14,7 @@ color-definitions {
     white: #ffffff;
 }
 */
+/*@import url('//fonts.googleapis.com/css?family=Raleway:400,800');*/
 
 @font-face {
     font-family:'5x8 LCD';
@@ -32,10 +33,10 @@ color-definitions {
 html, body { height: 100%; }
 
 body {
-    font-family: Helvetica, Arial, sans-serif;
+    font-family: Raleway, Helvetica, Arial, sans-serif;
     margin: 0;
     background-color: #4a4950;
-    color: #ffffff;
+    color: #444;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -47,13 +48,16 @@ body {
     align-items: center;
 }
 
-.dx7-container {
-    background-color: #313036;
-    border: 1px solid #232326;
+.container {
+    background-color: #d0d4d6;
+    background-image: url(images/plastic.png);
+    border: 1px solid #aaa;
+    border-radius: 20px;
     position: relative;
     width: 1140px;
     min-width: 1140px;
     margin: auto;
+    overflow: hidden;
 }
 
 .display {
@@ -62,11 +66,18 @@ body {
     height: 56px;
     top: 39px;
     left: 254px;
-    background-color: #cee048;
-    color: #2f3409;
-    box-shadow: inset 0 3px 0 3px #c0cf35;
+    background-color: #206af0;
+    color: #b7e7f5;
+    box-shadow: inset 0 3px 0 3px rgba(0,0,0,0.2);
     background-repeat: no-repeat;
     background-position: 0 0;
+}
+
+#stepdraw {
+    border: 6px solid #204ac0;
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-bottom-width: 0;
 }
 
 .analysis {
@@ -86,7 +97,7 @@ body {
     font-family: '5x8 LCD', serif;
     font-size: 16.27px;
     line-height: 16px;
-    color: rgba(0,0,0,0.8);
+    color: #b7e7f5;
     position: absolute;
     top: 8px;
     left: 5px;
@@ -105,7 +116,7 @@ select.lcd {
     -webkit-appearance: none;
     outline: 0;
     width: 160px;
-    color: rgba(0,0,0,0.8);
+    color: #b7e7f5;
     position: absolute;
     bottom: 8px;
     left: 5px;
@@ -136,96 +147,46 @@ select.lcd {
     font-size: 90%;
 }
 
-.dx7-button {
+.button {
     border: 0;
+    border-radius: 3px;
     appearance: none;
     -moz-appearance: none;
     text-transform: uppercase;
     font-weight: bold;
     font-size: 10.5px;
-    padding: 0 5px;
+    letter-spacing: 0.5px;
+    padding: 0 5px 2px 5px;
     text-align: left;
-    line-height: 18px;
+    line-height: 20px;
+    height: 20px;
     min-width: 60px;
-    height: 18px;
     background-color: gray;
     color: #ffffff;
     font-family: Helvetica, Arial, sans-serif;
     outline: 0;
     margin-right: 4px;
+    box-shadow: inset 0px -1px 1px rgba(0,0,0,0.25);
 }
 
-select.dx7-button {
+select.button {
     vertical-align: middle;
     text-transform: none;
-    background-color: #36353b;
     padding-right: 30px;
 }
 
-.purple {
-    background-color: #826896;
+.primary {
+    background-color: #ff8000;
 }
-.purple:active {
-    background-color: #4b3d57;
-}
-
-.pink {
-    background-color: #e74b4b;
-}
-.pink:active {
-    background-color: #b41818;
+.primary:active {
+    background-color: #d07000;
 }
 
-.teal {
-    background-color: #00af83;
+.secondary {
+    background-color: #777;
 }
-.teal:active {
-    background-color: #007a5a;
-}
-
-.dx7-toggle {
-    display: block;
-    width: 34px;
-    height: 28px;
-    margin: 0 auto;
-    background-color: #4a4950;
-    background-image: url('images/dx7-toggle-off.svg');
-    border: 2px solid #232529;
-}
-
-.dx7-toggle:focus {
-    outline: 2px solid rgba(255,255,255,0.15);
-}
-
-.dx7-toggle:active {
-    outline: 2px solid rgba(255,255,255,0.2);
-}
-
-.dx7-toggle:active {
-    background-color: #232529;
-    background-image: url('images/dx7-toggle-off-active.svg');
-}
-
-.dx7-toggle-on {
-    background-image: url('images/dx7-toggle-on.svg');
-}
-
-.dx7-toggle-on:active {
-    background-image: url('images/dx7-toggle-on-active.svg');
-}
-
-.dx7-top-panel {
-    display: block;
-    height: 120px;
-    background-color: #232326;
-    position: relative;
-}
-
-.dx7-bottom-panel {
-    padding: 15px 15px 15px 110px;
-    display: block;
-    height: 120px;
-    background-color: #232326;
+.secondary:active {
+    background-color: #555;
 }
 
 .param-group-heading {
@@ -243,50 +204,75 @@ select.dx7-button {
 
 .heading-algorithm { left: -80px; }
 
-.dx7-logo {
+.logo {
     position: absolute;
     top: 40px;
     left: 30px;
     width: 153px;
     height: 47px;
-    background-image: url(images/dx7-logo.png);
     background-size: cover;
 }
 
-.dx7-operators {
-    display: block;
-    top: 160px;
-    padding-top: 35px;
+.padsynth-logo {
+    background-image: url(images/padsynth-logo.png);
+    height: 54px;
+    width: 170px;
+    background-size: contain;
 }
 
-.dx7-buttons-row-1 {
+.buttons-row-1 {
     position: absolute;
     top: 39px;
     left: 710px;
     font-size: 0;
 }
 
-.dx7-buttons-row-2 {
+.buttons-row-2 {
     position: absolute;
     bottom: 20px;
     left: 710px;
 }
 
-.operator {
-    display: block; /* fix for spaces between inline children */
-    padding: 15px 15px 15px 110px;
-    height: 50px;
-    font-size: 0;
+.top-panel {
+    display: block;
+    height: 120px;
+    position: relative;
+    background-color: rgba(255,255,255,0.25);
+    border-top: 1px solid rgba(255,255,255,0.55);
+    border-bottom: 1px solid rgba(0,0,0,0.15);
 }
 
-.operator:nth-child(odd) {
-    background-color: #36353b;
+.bottom-panel {
+    padding: 15px 15px 15px 110px;
+    display: block;
+    height: 120px;
+    background-color: rgba(255,255,255,0.25);
+    border-top: 1px solid rgba(255,255,255,0.55);
+    border-bottom: 1px solid rgba(0,0,0,0.15);
+}
+
+.row {
+    display: block; /* fix for spaces between inline children */
+    padding: 15px 15px 15px 110px;
+    xfont-size: 0;
+}
+
+.rows {
+    display: block;
+    top: 160px;
+    padding-top: 3px;
+}
+
+.row:nth-child(odd) {
+    background-color: rgba(255,255,255,0.25);
+    border-top: 1px solid rgba(255,255,255,0.55);
+    border-bottom: 1px solid rgba(0,0,0,0.15);
 }
 
 .param {
     position: relative;
     display: inline-block;
-    width: 44px;
+    width: 64px;
     height: 50px;
     vertical-align: top;
     text-align: center;
@@ -332,7 +318,7 @@ select.dx7-button {
 
 .param-label {
     position: absolute;
-    top: 39px;
+    top: 49px;
     text-align: center;
     width: 100%;
     font-size: 8px;
@@ -345,8 +331,8 @@ select.dx7-button {
 
 .knob {
     margin: 0 auto;
-    height: 30px;
-    width: 30px;
+    height: 40px;
+    width: 40px;
     background-image: url('images/knob-background.svg');
     border-radius: 50px;
     outline: 0;
@@ -361,8 +347,8 @@ select.dx7-button {
 }
 
 .knob-foreground {
-    height: 30px;
-    width: 30px;
+    height: 40px;
+    width: 40px;
     position: absolute;
     background-image: url('images/knob-foreground.svg');
 }
@@ -405,4 +391,8 @@ select.dx7-button {
     position: absolute;
     top: 0;
     left: 18px;
+}
+
+.stepdraw {
+    margin: 20px auto;
 }

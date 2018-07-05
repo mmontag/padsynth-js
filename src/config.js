@@ -3,7 +3,8 @@ var LFO_RATE = 441;
 var LFO_SAMPLE_PERIOD = Math.floor(SAMPLE_RATE / LFO_RATE);
 var PERIOD = Math.PI * 2;
 var BUFFER_SIZE = 1024;
-var POLYPHONY = 12;
+var POLYPHONY = 24;
+var STEP_DRAW_SIZE = 100;
 
 if (/iPad|iPhone|iPod|Android/.test(navigator.userAgent)) {
 	BUFFER_SIZE = 4096;
@@ -16,7 +17,8 @@ var Config = {
 	lfoSamplePeriod: LFO_SAMPLE_PERIOD,
 	period: PERIOD,
 	bufferSize: BUFFER_SIZE,
-	polyphony: POLYPHONY
+	polyphony: POLYPHONY,
+	stepDrawSize: STEP_DRAW_SIZE
 };
 
 module.exports = Config;
