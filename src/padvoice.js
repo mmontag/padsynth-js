@@ -2,14 +2,12 @@ var FFT = require('./fft');
 var config = require('./config');
 var EnvelopeADSR = require('./envelope-adsr.js');
 
-var PERIOD = config.period;
-var BUFFER_SIZE = config.bufferSize;
 var SAMPLE_RATE = config.sampleRate;
 var WAVETABLE_LENGTH = 2; // seconds
-var N = 65536; //SAMPLE_RATE * WAVETABLE_LENGTH;
-var MULTISAMPLE_NOTES = [33, 45, 48, 51, 54, 57, 60, 63, 66, 69, 81, 93];
+var N = SAMPLE_RATE * WAVETABLE_LENGTH;
+// A wavetable will be generated for each of these MIDI notes
+var MULTISAMPLE_NOTES = [33, 39, 45, 48, 51, 54, 57, 60, 63, 66, 69, 74, 81, 93];
 var BASE_FREQUENCIES = MULTISAMPLE_NOTES.map(noteNumToFrequency);
-//var BASE_FREQUENCIES = [55, 110, 165, 220, 330, 440, 880, 1760];
 var PARAMS = null;
 var fft = new FFT(N);
 var randomLUT = new Float32Array(N);

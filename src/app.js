@@ -41,8 +41,8 @@ function initializeAudio() {
 	var reverbNode = audioContext.createReverbFromUrl("impulses/church-saint-laurentius.wav");
 	scriptProcessor = audioContext.createScriptProcessor(config.bufferSize, 0, 2);
 	scriptProcessor.connect(visualizer.getAudioNode());
-	//scriptProcessor.connect(reverbNode);
-	scriptProcessor.connect(audioContext.destination);
+	scriptProcessor.connect(reverbNode);
+	reverbNode.connect(audioContext.destination);
 	// Attach to window to avoid GC. http://sriku.org/blog/2013/01/30/taming-the-scriptprocessornode
 	scriptProcessor.onaudioprocess = window.audioProcess = function (e) {
 		Voice.update();
@@ -96,7 +96,7 @@ app.directive('toggleButton', function() {
 		transclude: true,
 		require: 'ngModel',
 		scope: {'ngModel': '='},
-		template: '<button type="button" class="dx7-toggle ng-class:{\'dx7-toggle-on\':ngModel}" data-toggle="button" ng-click="ngModel = 1 - ngModel" ng-transclude></button>'
+		template: '<button type="button" class="toggle ng-class:{\'toggle-on\':ngModel}" data-toggle="button" ng-click="ngModel = 1 - ngModel" ng-transclude></button>'
 	};
 });
 
@@ -535,19 +535,6 @@ app.controller('PresetCtrl', ['$scope', '$localStorage', '$http', function ($sco
 	], function() {
 		Voice.setDirty();
 	});
-	//$http.get('padsynth-presets.json')
-	//		.success(function(data) {
-	//			self.$storage = $localStorage;
-	//			self.presets = [];
-	//			for (var i = 0; i < self.basePresets.length; i++) {
-	//				if (self.$storage[i]) {
-	//					self.presets[i] = Angular.copy(self.$storage[i]);
-	//				} else {
-	//					self.presets[i] = Angular.copy(self.basePresets[i]);
-	//				}
-	//			}
-				//self.onChange();
-			//});
 
 	this.loadProfile = function(type) {
 		var array = HarmonicProfiles[type](config.stepDrawSize);
