@@ -202,8 +202,6 @@ select.button {
     top: 65px;
 }
 
-.heading-algorithm { left: -80px; }
-
 .logo {
     position: absolute;
     top: 40px;
@@ -294,28 +292,6 @@ select.button {
     width: 29px;
 }
 
-.frequency-display {
-    display: inline-block;
-    width: 60px;
-    height: 43px;
-    line-height: 20px;
-    box-sizing: border-box;
-    text-align: center;
-    padding: 4px;
-    background-image: url(images/frequency-display.svg);
-    background-position: 0 0;
-    background-repeat: no-repeat;
-    font-family: 'Digital 7', monospace;
-    letter-spacing: 1px;
-    font-size: 20px;
-    color: #fa0606;
-}
-@-moz-document url-prefix() {
-    .frequency-display {
-        line-height: 12px;
-    }
-}
-
 .param-label {
     position: absolute;
     top: 49px;
@@ -353,46 +329,18 @@ select.button {
     background-image: url('images/knob-foreground.svg');
 }
 
-.slider {
-    height: 50px;
-    width: 18px;
-    background-image: url('images/dx7-slider-rail.svg');
-    background-position: 0 0;
-    overflow: hidden;
-    position: relative;
-}
-
-.slider:focus {
-    outline: 2px solid rgba(255,255,255,0.15);
-}
-
-.slider:active {
-    outline: 2px solid rgba(255,255,255,0.2);
-}
-
-.param:last-child .slider {
-    width: 18px;
-}
-
-.slider-foreground {
-    height: 13px;
-    width: 18px;
-    background-image: url('images/dx7-slider-foreground.svg');
-    background-position: 0 0;
-    position: relative;
-    top: 0;
-}
-
-.slider-meter {
-    height: 50px;
-    width: 10px;
-    background-image: url('images/dx7-slider-meter.svg');
-    background-position: 0 0;
-    position: absolute;
-    top: 0;
-    left: 18px;
-}
-
 .stepdraw {
     margin: 20px auto;
+}
+
+.toggle {
+    background: dimgray;
+}
+
+.toggle:active {
+    outline: 2px solid firebrick;
+}
+
+.toggle-on {
+    background: green;
 }
