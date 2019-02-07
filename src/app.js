@@ -36,7 +36,7 @@ var visualizer = new Visualizer("analysis", 256, 35, 0x206af0, 0xb7e7f5, audioCo
 var stepDraw = new StepDraw("stepdraw", 0x206af0, 0xb7e7ff, [], 60, Voice.updateHarmonics);
 var scriptProcessor = null;
 
-function initializeAudio() {
+function setupAudioGraph() {
 	Reverb.extend(audioContext);
 	var reverbNode = audioContext.createReverbFromUrl("impulses/church-saint-laurentius.wav");
 	scriptProcessor = audioContext.createScriptProcessor(config.bufferSize, 0, 2);
@@ -64,6 +64,25 @@ function initializeAudio() {
 		}
 	};
 }
+
+function unlockAudioContext(audioCtx) {
+  if (audioCtx.state === 'suspended') {
+    var events = ['touchstart', 'touchend', 'mousedown', 'keydown'];
+    var unlock = function unlock() {
+      events.forEach(function (event) {
+        document.body.removeEventListener(event, unlock)
+      });
+      audioCtx.resume();
+    };
+
+    events.forEach(function (event) {
+      document.body.addEventListener(event, unlock, false)
+    });
+  }
+}
+
+setupAudioGraph();
+unlockAudioContext(audioContext);
 
 // Polyphony counter
 setInterval(function() {
@@ -486,7 +505,6 @@ app.controller('MidiCtrl', ['$scope', '$http', function($scope, $http) {
 	window.addEventListener('keydown', this.onKeyDown, false);
 	window.addEventListener('keyup', this.onKeyUp, false);
 
-	initializeAudio();
 }]);
 
 app.controller('PresetCtrl', ['$scope', '$localStorage', '$http', function ($scope, $localStorage, $http) {
