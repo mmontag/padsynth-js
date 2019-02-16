@@ -1,5 +1,5 @@
-DX7 Synth is provided under MIT License.
-Copyright (C) 2014 Matt Montag
+Padsynth JS is provided under MIT License.
+Copyright (C) 2014-2019 Matt Montag
 
 The MIT License (MIT)
 
