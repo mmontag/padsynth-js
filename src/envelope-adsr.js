@@ -23,14 +23,14 @@ function EnvelopeADSR(params) {
 	if (attackTime < 0) throw Error("attackTime must be positive");
 	if (decayTime < 0) throw Error("decayTime must be positive");
 	if (releaseTime < 0) throw Error("releaseTime must be positive");
-	this.attackIncrement = this.range / (attackTime * SAMPLE_RATE);
+	this.attackIncrement = this.range / (attackTime * config.sampleRate);
 	this.sustainLevel = this.range * sustainRatio + this.min;
-	this.decayMult = Math.exp(LN_OF_SMALL_NUMBER/(decayTime * SAMPLE_RATE));
+	this.decayMult = Math.exp(LN_OF_SMALL_NUMBER/(decayTime * config.sampleRate));
 	this.releaseTime = releaseTime;
 }
 
 EnvelopeADSR.prototype.render = function() {
-	if (this.max == 0) return 0;
+	if (this.max === 0) return 0;
 	switch (this.state) {
 		case ENV_ATTACK:
 			this.val += this.attackIncrement;
@@ -64,7 +64,7 @@ EnvelopeADSR.prototype.render = function() {
 };
 
 EnvelopeADSR.prototype.noteOff = function() {
-	this.releaseMult = Math.exp(LN_OF_SMALL_NUMBER/(this.releaseTime * SAMPLE_RATE));
+	this.releaseMult = Math.exp(LN_OF_SMALL_NUMBER/(this.releaseTime * config.sampleRate));
 	this.state = ENV_RELEASE;
 };
 

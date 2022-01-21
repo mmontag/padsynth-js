@@ -173,7 +173,7 @@ app.directive('knob', function() {
 			if (code >= 37 && code <= 40) {
 				e.preventDefault();
 				e.stopPropagation();
-				if (code == 38 || code == 39) {
+				if (code === 38 || code === 39) {
 					scope.ngModel = Math.min(scope.ngModel + increment, max);
 				} else {
 					scope.ngModel = Math.max(scope.ngModel - increment, min);
@@ -234,111 +234,6 @@ app.directive('knob', function() {
 	};
 });
 
-app.directive('slider', function() {
-	function link(scope, element, attrs) {
-		var sliderHandleHeight = 8;
-		var sliderRailHeight = 50;
-		var positionRange = sliderRailHeight - sliderHandleHeight;
-		var pixelRange = 50;
-		var startY, startModel, down = false;
-		var max = element.attr('max');
-		var min = element.attr('min');
-		var increment = (max - min) < 99 ? 1 : 2;
-		element.on('mousedown', function(e) {
-			startY = e.clientY;
-			startModel = scope.ngModel || 0;
-			down = true;
-			e.preventDefault();
-			e.stopPropagation();
-			window.addEventListener('mousemove', onMove);
-			window.addEventListener('mouseup', onUp);
-			element[0].querySelector('.slider').focus();
-			scope.$emit(PARAM_START_MANIPULATION, scope.ngModel);
-		});
-
-		element.on('touchstart', function(e) {
-			if (e.touches.length > 1) {
-				// Don't interfere with any multitouch gestures
-				onUp(e);
-				return;
-			}
-
-			startY = e.targetTouches[0].clientY;
-			startModel = scope.ngModel || 0;
-			down = true;
-			e.preventDefault();
-			e.stopPropagation();
-			window.addEventListener('touchmove', onMove);
-			window.addEventListener('touchend', onUp);
-			element[0].querySelector('.slider').focus();
-			scope.$emit(PARAM_START_MANIPULATION, scope.ngModel);
-		});
-
-		element.on('keydown', function(e) {
-			var code = e.keyCode;
-			if (code >= 37 && code <= 40) {
-				e.preventDefault();
-				e.stopPropagation();
-				if (code == 38 || code == 39) {
-					scope.ngModel = Math.min(scope.ngModel + 1, max);
-				} else {
-					scope.ngModel = Math.max(scope.ngModel - 1, min);
-				}
-				apply();
-			}
-		});
-
-		element.on('wheel', function(e) {
-			e.preventDefault();
-			element[0].querySelector('.slider').focus();
-			if (e.deltaY > 0) {
-				scope.ngModel = Math.max(scope.ngModel - increment, min);
-			} else {
-				scope.ngModel = Math.min(scope.ngModel + increment, max);
-			}
-			apply();
-		});
-
-		function onMove(e) {
-			if (down) {
-				var clientY = e.clientY;
-				if (e.targetTouches && e.targetTouches[0])
-					clientY = e.targetTouches[0].clientY;
-				var dy = (startY - clientY) * (max - min) / pixelRange;
-				scope.ngModel = Math.round(Math.max(min, Math.min(max, dy + startModel)));
-				apply();
-			}
-		}
-
-		function onUp(e) {
-			down = false;
-			window.removeEventListener('mousemove', onMove);
-			window.removeEventListener('mouseup', onUp);
-			window.removeEventListener('touchmove', onMove);
-			window.removeEventListener('touchend', onUp);
-			scope.$emit(PARAM_STOP_MANIPULATION, scope.ngModel);
-		}
-
-		var apply = _.throttle(function() {
-			scope.$emit(PARAM_CHANGE, scope.label + ": " + scope.ngModel);
-			scope.$apply();
-		}, 33);
-
-		scope.getTop = function() {
-			return positionRange - ((this.ngModel - min) / (max - min) * positionRange);
-		}
-	}
-
-	return {
-		restrict: 'E',
-		replace: true,
-		require: 'ngModel',
-		scope: {ngModel: '=', label: '@'},
-		template: '<div><div class="slider" tabindex="0"><div class="slider-foreground" ng-style="{\'top\': getTop() + \'px\'}"></div></div><div class="slider-meter"></div></div>',
-		link: link
-	};
-});
-
 app.controller('MidiCtrl', ['$scope', '$http', function($scope, $http) {
 	// MIDI stuff
 	var self = this;
@@ -385,20 +280,24 @@ app.controller('MidiCtrl', ['$scope', '$http', function($scope, $http) {
 
 	var mml = null;
 	this.vizMode = 0;
-	var mmlDemos = [ "t92 l8 o4 $" +
+	var mmlDemos = [
+		// demo in the style of KORG Legacy Collection
+		"t92 l8 o4 $" +
 		"[>cg<cea]2.        [>cg<ceg]4" +
 		"[>>a<a<c+fa+]2.    [>>a <a <c+ e a]4" +
 		"[>>f <f g+ <c g]2. [>>f <f g+ <c f]4" +
 		"[>>g <g g+ b <g+]2.[>>g <g <g]4;" +
 		"t92 $ l1 o3 v12 r r r r2 r8 l32 v6 cdef v8 ga v10 b<c v12 de v14 fg;",
+		// demo in the style of "Jessie" by Stuart Price/Zoot Woman
+		// https://youtu.be/4Mt2-mlTz7Y?t=1244
 		"t120$ l8 o3    >g+2.. g+ a+4. a+ <c2 >a+    g+2.. a+4 a+4 <c4. >d+" +
-			"              a+ g+2. g+ a+4. a+ <c2 >a+   g+2.. a+4 a+4 <c2.;" +
-			"t120$l8 o4    rr g g4 g+ a+4 d4 d4 d+2     d c g g4 g+ a+4 d4 d4 d+2" +
-			"              rr g g4 g+ a+4 d4 d4 d+2     d c g g4 g+ a+4 d4 d4 d+2.;" +
-			"t120$l8 o4 v9 rr d+ d+2 r >a+4 a+4 <c2     >a+ g+ <d+ d+2 r >a+4 a+4 a+2" +
-			"              rr d+ d+2 r >a+4 a+4 <c2     >a+ g+ <d+ d+2 r >a+4 a+4 a+2.;" +
-			"t120$l8 o4 v8 rr c c2 r   >f4 f4 g2        a+ g+ <c c2 >f f4 r f g2<" +
-			"              rr c c2 r   >f4 f4 g2        a+ g+ <c c2 >f f4 r f g2.<;"
+		"               a+ g+2. g+ a+4. a+ <c2 >a+   g+2.. a+4 a+4 <c2.;" +
+		"t120$l8 o4     rr g g4 g+ a+4 d4 d4 d+2     d c g g4 g+ a+4 d4 d4 d+2" +
+		"               rr g g4 g+ a+4 d4 d4 d+2     d c g g4 g+ a+4 d4 d4 d+2.;" +
+		"t120$l8 o4 v9  rr d+ d+2 r >a+4 a+4 <c2     >a+ g+ <d+ d+2 r >a+4 a+4 a+2" +
+		"               rr d+ d+2 r >a+4 a+4 <c2     >a+ g+ <d+ d+2 r >a+4 a+4 a+2.;" +
+		"t120$l8 o4 v8  rr c c2 r   >f4 f4 g2        a+ g+ <c c2 >f f4 r f g2<" +
+		"               rr c c2 r   >f4 f4 g2        a+ g+ <c c2 >f f4 r f g2.<;"
 	];
 	var qwertyNotes = [];
 	//Lower row: zsxdcvgbhnjm...
@@ -572,6 +471,11 @@ app.controller('PresetCtrl', ['$scope', '$localStorage', '$http', function ($sco
 		stepDraw.setArray(array);
 		Voice.updateHarmonics(array);
 	};
+
+	this.smoothProfile = function() {
+		// TODO
+		console.log("Not implemented");
+	}
 
 	this.onChange = function() {
 		this.params = this.presets[this.selectedIndex];
