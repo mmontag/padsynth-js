@@ -18,6 +18,9 @@ var Reverb = require('./reverb');
 var config = require('./config');
 var defaultPresets = require('./padsynth-presets');
 
+var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+config.sampleRate = audioContext.sampleRate;
+
 var BUFFER_SIZE_MS = 1000 * config.bufferSize / config.sampleRate;
 var MS_PER_SAMPLE = 1000 / config.sampleRate;
 var VIZ_MODE_NONE = 0;
@@ -31,7 +34,6 @@ var DEFAULT_PARAM_TEXT = '--';
 var app = Angular.module('synthApp', ['ngStorage']);
 var synth = new Synth(Voice, config.polyphony);
 var midi = new MIDI(synth);
-var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 var visualizer = new Visualizer("analysis", 256, 35, 0x206af0, 0xb7e7f5, audioContext);
 var stepDraw = new StepDraw("stepdraw", 0x206af0, 0xb7e7ff, [], 60, Voice.updateHarmonics);
 var scriptProcessor = null;

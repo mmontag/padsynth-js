@@ -1,6 +1,5 @@
 var config = require('./config');
 
-var SAMPLE_RATE = config.sampleRate;
 var ENV_ATTACK = 0;
 var ENV_DECAY = 1;
 var ENV_SUSTAIN = 2;

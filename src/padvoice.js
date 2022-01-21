@@ -2,16 +2,14 @@ var FFT = require('./fft');
 var config = require('./config');
 var EnvelopeADSR = require('./envelope-adsr.js');
 
-var SAMPLE_RATE = config.sampleRate;
-var WAVETABLE_LENGTH = 2; // seconds
-var N = SAMPLE_RATE * WAVETABLE_LENGTH;
+var WAVETABLE_SAMPLES = 44100 * 2;
 // A wavetable will be generated for each of these MIDI notes
 var MULTISAMPLE_NOTES = [33, 39, 45, 48, 51, 54, 57, 60, 63, 66, 69, 74, 81, 93];
 var BASE_FREQUENCIES = MULTISAMPLE_NOTES.map(noteNumToFrequency);
 var PARAMS = null;
-var fft = new FFT(N);
-var randomLUT = new Float32Array(N);
-for (var i = 0; i < N; i++) {
+var fft = new FFT(WAVETABLE_SAMPLES);
+var randomLUT = new Float32Array(WAVETABLE_SAMPLES);
+for (var i = 0; i < WAVETABLE_SAMPLES; i++) {
 	randomLUT[i] = Math.random() * 2 * Math.PI;
 }
 
@@ -25,9 +23,9 @@ function PADVoice(note, velocity) {
 	var baseFrequency = BASE_FREQUENCIES[this.wavetableIndex];
 	this.stepSize = frequency / baseFrequency;
 	// Start at random point in wavetable
-	this.ptrL = Math.floor(Math.random() * N);
+	this.ptrL = Math.floor(Math.random() * WAVETABLE_SAMPLES);
 	// Stereo by 1/2 wavetable shift
-	this.ptrR = (this.ptrL + N / 2) % N;
+	this.ptrR = (this.ptrL + WAVETABLE_SAMPLES / 2) % WAVETABLE_SAMPLES;
 	//console.log("Note %d with wavetableIndex %d, baseFrequency %d, stepSize %f", note, this.wavetableIndex, baseFrequency, this.stepSize);
 }
 
@@ -91,13 +89,13 @@ PADVoice.generateWavetable = function (i) {
 	//console.timeEnd("Performing IFFT " + i);
 	// Normalize the output (prevent ear damage)
 	var max = 0;
-	for (var j = 0; j < N; j++)
+	for (var j = 0; j < WAVETABLE_SAMPLES; j++)
 		if (Math.abs(wavetable[j]) > max)
 			max = Math.abs(wavetable[j]);
 	if (max < 1e-5)
 		max = 1e-5;
 	max = max / 50; // sometimes it's not loud enough
-	for (var k = 0; k < N; k++)
+	for (var k = 0; k < WAVETABLE_SAMPLES; k++)
 		wavetable[k] /= max;
 	return wavetable;
 };
@@ -118,17 +116,17 @@ PADVoice.profile = function (fi, bwi) {
 
 PADVoice.computeCoeffs = function (frequency, harmonics, bwCents, bwScaling) {
 	var i, nh, hprofile;
-	var mag = new Float32Array(N / 2);
+	var mag = new Float32Array(WAVETABLE_SAMPLES / 2);
 
 	for (nh = 0; nh < harmonics.length; nh++) {
 		if (harmonics[nh] < 0.001 || !harmonics[nh]) continue;
 		var bwHz = (Math.pow(2, bwCents / 1200) - 1) * frequency * Math.pow(PADVoice.relF(nh + 1), bwScaling);
-		var bwi = bwHz / (2 * SAMPLE_RATE);
+		var bwi = bwHz / (2 * config.sampleRate);
 		var rF = frequency * PADVoice.relF(nh + 1);
-		var fi = rF / SAMPLE_RATE;
-		var centerBin = Math.floor(fi * N);
-		for (i = 0; centerBin + i < N / 2; i++) {
-			hprofile = PADVoice.profile(((centerBin + i) / N) - fi, bwi);
+		var fi = rF / config.sampleRate;
+		var centerBin = Math.floor(fi * WAVETABLE_SAMPLES);
+		for (i = 0; centerBin + i < WAVETABLE_SAMPLES / 2; i++) {
+			hprofile = PADVoice.profile(((centerBin + i) / WAVETABLE_SAMPLES) - fi, bwi);
 			if (hprofile < 0.01) break;
 			mag[centerBin + i] += hprofile * harmonics[nh];
 			if (centerBin - i > 0)
@@ -136,10 +134,10 @@ PADVoice.computeCoeffs = function (frequency, harmonics, bwCents, bwScaling) {
 		}
 	}
 
-	var real = new Float32Array(N / 2);
-	var imag = new Float32Array(N / 2);
+	var real = new Float32Array(WAVETABLE_SAMPLES / 2);
+	var imag = new Float32Array(WAVETABLE_SAMPLES / 2);
 	//Convert the magnitude bins to complex array (real/imaginary) with random phases
-	for (i = 0; i < N / 2; i++) {
+	for (i = 0; i < WAVETABLE_SAMPLES / 2; i++) {
 		var phase = randomLUT[i];
 		real[i] = mag[i] * Math.cos(phase);
 		imag[i] = mag[i] * Math.sin(phase);
@@ -241,8 +239,8 @@ PADVoice.prototype.render = function () {
 
 	scaling = this.envelope.render() * this.velocity;
 
-	this.ptrL = (this.ptrL + this.stepSize) % N;
-	this.ptrR = (this.ptrR + this.stepSize) % N;
+	this.ptrL = (this.ptrL + this.stepSize) % WAVETABLE_SAMPLES;
+	this.ptrR = (this.ptrR + this.stepSize) % WAVETABLE_SAMPLES;
 
 	return [outputL * scaling, outputR * scaling];
 };
