@@ -101,6 +101,7 @@ body {
     position: absolute;
     top: 8px;
     left: 5px;
+    z-index: 100;
 }
 
 select.lcd {
@@ -147,46 +148,55 @@ select.lcd {
     font-size: 90%;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    font-family: Helvetica, Arial, sans-serif;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 10.5px;
+    letter-spacing: 0.5px;
+    margin: 10px 0;
+}
+
 .button {
     border: 0;
-    border-radius: 3px;
+    border-radius: 2px;
     appearance: none;
     -moz-appearance: none;
     text-transform: uppercase;
     font-weight: bold;
     font-size: 10.5px;
     letter-spacing: 0.5px;
-    padding: 0 5px 2px 5px;
+    padding: 0 5px 3px 5px;
     text-align: left;
     line-height: 20px;
-    height: 20px;
+    height: 21px;
     min-width: 60px;
     background-color: gray;
     color: #ffffff;
     font-family: Helvetica, Arial, sans-serif;
     outline: 0;
     margin-right: 4px;
-    box-shadow: inset 0px -1px 1px rgba(0,0,0,0.25);
+    box-shadow: inset 0px -2px 0px rgba(0,0,0,0.25);
 }
 
 select.button {
-    vertical-align: middle;
+    vertical-align: top;
     text-transform: none;
     padding-right: 30px;
 }
 
 .primary {
-    background-color: #ff8000;
+    background-color: #6cd0b0;
 }
 .primary:active {
-    background-color: #d07000;
+    background-color: #58aa90;
 }
 
 .secondary {
-    background-color: #777;
+    background-color: #81b6f0;
 }
 .secondary:active {
-    background-color: #555;
+    background-color: #6c98c9;
 }
 
 .param-group-heading {
@@ -258,7 +268,6 @@ select.button {
 .rows {
     display: block;
     top: 160px;
-    padding-top: 3px;
 }
 
 .row:nth-child(odd) {
@@ -330,7 +339,7 @@ select.button {
 }
 
 .stepdraw {
-    margin: 20px auto;
+    margin: 10px auto;
 }
 
 .toggle {
