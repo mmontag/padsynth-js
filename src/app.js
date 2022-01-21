@@ -37,14 +37,21 @@ var midi = new MIDI(synth);
 var visualizer = new Visualizer("analysis", 256, 35, 0x206af0, 0xb7e7f5, audioContext);
 var stepDraw = new StepDraw("stepdraw", 0x206af0, 0xb7e7ff, [], 60, Voice.updateHarmonics);
 var scriptProcessor = null;
+var reverbLevelNode = null;
 
 function setupAudioGraph() {
 	Reverb.extend(audioContext);
 	var reverbNode = audioContext.createReverbFromUrl("impulses/church-saint-laurentius.wav");
+	reverbLevelNode = audioContext.createGain();
+	reverbNode.connect(reverbLevelNode);
+
 	scriptProcessor = audioContext.createScriptProcessor(config.bufferSize, 0, 2);
 	scriptProcessor.connect(visualizer.getAudioNode());
 	scriptProcessor.connect(reverbNode);
-	reverbNode.connect(audioContext.destination);
+
+	scriptProcessor.connect(audioContext.destination);
+	reverbLevelNode.connect(audioContext.destination);
+
 	// Attach to window to avoid GC. http://sriku.org/blog/2013/01/30/taming-the-scriptprocessornode
 	scriptProcessor.onaudioprocess = window.audioProcess = function (e) {
 		Voice.update();
@@ -554,6 +561,10 @@ app.controller('PresetCtrl', ['$scope', '$localStorage', '$http', function ($sco
 		'presetCtrl.params.harmonicScaling'
 	], function() {
 		Voice.setDirty();
+	});
+
+	$scope.$watch('presetCtrl.params.reverb', function(value) {
+		reverbLevelNode.gain.value = value * 2;
 	});
 
 	this.loadProfile = function(type) {
