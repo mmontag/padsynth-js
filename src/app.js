@@ -63,7 +63,7 @@ function setupAudioGraph() {
 
 		for (var i = 0, length = buffer.length; i < length; i++) {
 			sampleTime += MS_PER_SAMPLE;
-			if (synth.eventQueue.length && synth.eventQueue[0].receivedTime < sampleTime) {
+			if (synth.eventQueue.length && synth.eventQueue[0].timeStamp < sampleTime) {
 				synth.processMidiEvent(synth.eventQueue.shift());
 			}
 
